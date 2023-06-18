@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1041486702111",
+    "project_id": "react-native-auth-flow-d181b",
+    "storage_bucket": "react-native-auth-flow-d181b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1041486702111:android:47cf75452e53bba5e8d72a",
+        "android_client_info": {
+          "package_name": "com.reactnativeauthflow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1041486702111-ofkfkb7ric13f4r9n85qhjonf55vfhcp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.reactnativeauthflow",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "1041486702111-75ralaeqsk9jhg9doi1iqi8gea51sjp9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZrbHDs-Jj8yMaT3Doxbh7HUpWnCydWwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1041486702111-75ralaeqsk9jhg9doi1iqi8gea51sjp9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
