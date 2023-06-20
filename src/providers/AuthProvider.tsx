@@ -1,8 +1,10 @@
 import React from 'react';
 import auth from '@react-native-firebase/auth';
+import {FirebaseAuthTypes} from '@react-native-firebase/auth/lib';
+import * as Keychain from 'react-native-keychain';
 
 interface AuthProviderProps {
-  user?: Record<any, any>;
+  user: FirebaseAuthTypes.User | null;
   isLoading?: boolean;
   logout: () => void;
   login: (email: string, password: string) => void;
@@ -10,6 +12,7 @@ interface AuthProviderProps {
 }
 
 const defaultValue = {
+  user: null,
   login: () => {},
   logout: () => {},
   signUp: () => {},
@@ -18,17 +21,20 @@ const defaultValue = {
 export const AuthContext = React.createContext<AuthProviderProps>(defaultValue);
 
 export const AuthProvider = ({children}: {children: JSX.Element}) => {
-  const [user, setUser] = React.useState<Record<any, any> | undefined>(
-    undefined,
-  );
+  const [user, setUser] = React.useState<FirebaseAuthTypes.User | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     const checkUserLoggedIn = async () => {
       try {
-        const token = 'token';
-        if (token) {
-          // TODO: verify stored credentials with Firebase
+        const credentials = await Keychain.getGenericPassword();
+        if (credentials) {
+          const {username: email, password} = credentials;
+          const currentUser = await auth().signInWithEmailAndPassword(
+            email,
+            password,
+          );
+          setUser(currentUser.user);
         }
       } catch (error) {
         console.log(error);
@@ -45,8 +51,7 @@ export const AuthProvider = ({children}: {children: JSX.Element}) => {
         email,
         password,
       );
-      // const token = await user.getIdToken();
-      // TODO: store credentials in keychain
+      await Keychain.setGenericPassword(email, password);
       setUser(storedUser);
     } catch (error) {
       console.log(error);
@@ -59,8 +64,7 @@ export const AuthProvider = ({children}: {children: JSX.Element}) => {
         email,
         password,
       );
-      // const token = await user.getIdToken();
-      // TODO: store credentials in keychain
+      await Keychain.setGenericPassword(email, password);
       setUser(storedUser);
     } catch (error) {
       console.log(error);
@@ -69,9 +73,9 @@ export const AuthProvider = ({children}: {children: JSX.Element}) => {
 
   const logout = async () => {
     try {
-      // TODO: remove credentials from keychain
+      await Keychain.resetGenericPassword();
       await auth().signOut();
-      setUser(undefined);
+      setUser(null);
     } catch (error) {
       console.log(error);
     }
