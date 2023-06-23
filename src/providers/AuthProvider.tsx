@@ -1,7 +1,14 @@
 import React from 'react';
-import auth from '@react-native-firebase/auth';
 import {FirebaseAuthTypes} from '@react-native-firebase/auth/lib';
 import * as Keychain from 'react-native-keychain';
+import {
+  googleSignIn,
+  signInByEmail,
+  signInSilentByEmail,
+  signInSilentByGoogle,
+  signOut,
+  signUpWithFirebase,
+} from '../utils/auth';
 
 interface AuthProviderProps {
   user: FirebaseAuthTypes.User | null;
@@ -9,6 +16,7 @@ interface AuthProviderProps {
   logout: () => void;
   login: (email: string, password: string) => void;
   signUp: (email: string, password: string) => void;
+  signInWithGoogle: () => void;
 }
 
 const defaultValue = {
@@ -16,6 +24,7 @@ const defaultValue = {
   login: () => {},
   logout: () => {},
   signUp: () => {},
+  signInWithGoogle: () => {},
 };
 
 export const AuthContext = React.createContext<AuthProviderProps>(defaultValue);
@@ -27,17 +36,18 @@ export const AuthProvider = ({children}: {children: JSX.Element}) => {
   React.useEffect(() => {
     const checkUserLoggedIn = async () => {
       try {
-        const credentials = await Keychain.getGenericPassword();
-        if (credentials) {
-          const {username: email, password} = credentials;
-          const currentUser = await auth().signInWithEmailAndPassword(
-            email,
-            password,
-          );
-          setUser(currentUser.user);
+        const userSignedByEmail = await signInSilentByEmail();
+        if (userSignedByEmail) {
+          setUser(userSignedByEmail);
+          return;
+        }
+
+        const userSignedByGoogle = await signInSilentByGoogle();
+        if (userSignedByGoogle) {
+          setUser(userSignedByGoogle);
         }
       } catch (error) {
-        console.log(error);
+        console.error(checkUserLoggedIn.name, error);
       }
       setIsLoading(false);
     };
@@ -47,37 +57,43 @@ export const AuthProvider = ({children}: {children: JSX.Element}) => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const {user: storedUser} = await auth().createUserWithEmailAndPassword(
-        email,
-        password,
-      );
+      const newUser = await signUpWithFirebase(email, password);
       await Keychain.setGenericPassword(email, password);
-      setUser(storedUser);
+      setUser(newUser);
     } catch (error) {
-      console.log(error);
+      console.error(signUp.name, error);
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      const {user: storedUser} = await auth().signInWithEmailAndPassword(
-        email,
-        password,
-      );
+      const storedUser = await signInByEmail(email, password);
       await Keychain.setGenericPassword(email, password);
       setUser(storedUser);
     } catch (error) {
-      console.log(error);
+      console.error(login.name, error);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const googleData = await googleSignIn();
+      if (googleData) {
+        const {user: storedUser, clientId, idToken} = googleData;
+        await Keychain.setInternetCredentials('googleAuth', clientId, idToken);
+        setUser(storedUser);
+      }
+    } catch (error) {
+      console.error(signInWithGoogle.name, error);
     }
   };
 
   const logout = async () => {
     try {
-      await Keychain.resetGenericPassword();
-      await auth().signOut();
+      await signOut();
       setUser(null);
     } catch (error) {
-      console.log(error);
+      console.error(logout.name, error);
     }
   };
 
@@ -85,6 +101,7 @@ export const AuthProvider = ({children}: {children: JSX.Element}) => {
     user,
     isLoading,
     login,
+    signInWithGoogle,
     logout,
     signUp,
   };

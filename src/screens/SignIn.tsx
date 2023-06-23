@@ -3,7 +3,7 @@ import {Button, StyleSheet, Text, View} from 'react-native';
 import {AuthContext} from '../providers/AuthProvider';
 
 export const SignInScreen = () => {
-  const {login, signUp} = React.useContext(AuthContext);
+  const {login, signUp, signInWithGoogle} = React.useContext(AuthContext);
 
   return (
     <View style={styles.container}>
@@ -16,6 +16,7 @@ export const SignInScreen = () => {
         title="Login"
         onPress={() => login('test@gmail.com', 'test123')}
       />
+      <Button title="Sign In with Google" onPress={() => signInWithGoogle()} />
     </View>
   );
 };
